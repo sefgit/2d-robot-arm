@@ -1,651 +1,700 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
-  <title>Canvas Robot Game</title>
-  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
-  <meta name="robots" content="noindex, nofollow">
-  <meta name="googlebot" content="noindex, nofollow">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-
-  <style id="compiled-css" type="text/css">
+	<title>2D Robot Arm</title>
+	<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+	<meta name="robots" content="noindex, nofollow">
+	<meta name="googlebot" content="noindex, nofollow">
+	<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=yes">
+	<meta name="mobile-web-app-capable" content="yes">
+	<meta name="apple-mobile-web-app-capable" content="yes">
+	<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+	<meta http-equiv="Pragma" content="no-cache">
+	<meta http-equiv="Expires" content="0">
+	<link rel="manifest" href="manifest.json">
+	<style id="compiled-css" type="text/css">
 	body {
-	background: #fff;
-	font-family: arial;
-	font-size:10pt;
+		background: #fff;
+		font-family: arial;
+		font-size:10pt;
 	}  
-      #game {
-  background: lightblue;
-  border: 1px solid black;
-}
-
-label {
-  display: inline-block;
-  width: 70px;
-}
-ul {
-	font-family: arial;
-	color: gray;
-	list-style: none;
-	padding-left: 5px;
-}
-.slidecontainer {
-  width: 50px;
-  display:inline-block;
-}
-    /* EOS */
-  </style>
+	#game {
+	  background: lightblue;
+	  border: 1px solid black;
+	}
+	input {
+		font-size:16pt;
+	}
+	label {
+	  display: inline-block;
+	  width: 70px;
+	}
+	ul {
+		font-family: arial;
+		color: gray;
+		list-style: none;
+		padding-left: 5px;
+	}
+	.slidecontainer {
+	  width: 50px;
+	  display:inline-block;
+	}
+	.inline {
+		display:inline-block; 
+		width:200px; 
+		vertical-align:top;
+	}
+	.panel {
+		position:relative;
+		display:inline-block; 
+		width:400px; 
+		vertical-align:top;
+		left:-400px;
+	}
+	.credits {
+		position:absolute;
+		display:inline-block; 
+		width:200px; 
+		vertical-align:top;
+		left:20px;
+	}
+	</style>
 </head>
 <body>
-<!-- based on Canvas Robot Game by -->
-<!-- B. von Konsky                 -->
-<!-- Business Web Technologies     -->
-<!-- School of Information Systems -->
-<!-- Curtin University             -->
-<div style="display:inline-block">
-<canvas id="game" width="640px" height="410px"></canvas>
-</div>
-<div style="display:inline-block; width:160px; vertical-align:top">
-<p>
-  <button onclick="location.reload()"> Reload </button>
-  &nbsp;&nbsp;&nbsp;
-  &nbsp;&nbsp;&nbsp;&nbsp;
-  <button onclick="myalert('');reset()"> Reset </button>
-  <hr>
-  <label for="alpha">Alpha</label><br>
-  <input id="Alpha" value="90" style="width:50px" onchange="updateSlider(this)"/>
-  <input type="range" min="-180" max="180" value="90" class="slider" id="sAlpha" style="width:80px" onchange="updateEdit(this)">
-  
-  <br>
-  <label for="beta"> Beta</label><br>
-  <input id="Beta" value="0" style="width:50px" onchange="updateSlider(this)"/>
-  <input type="range" min="-180" max="180" value="0" class="slider" id="sBeta" style="width:80px" onchange="updateEdit(this)">
-  <br>
-  <label for="gamma">Gamma</label><br>
-  <input id="Gamma" value="0" style="width:50px" onchange="updateSlider(this)"/>
-  <input type="range" min="-180" max="180" value="0" class="slider" id="sGamma" style="width:80px" onchange="updateEdit(this)">
-</p>
-<p>
-  <hr>
-  <input type="checkbox" onclick="drawWorld()" name="Auto" checked />
-  <label for="Auto">Auto</label>
-  <button onclick="move()"> Move </button>
-  <br> &nbsp;
-  <br>
-  <button onclick="release()"> Release </button>
-  &nbsp;&nbsp;&nbsp;
-  &nbsp;&nbsp;&nbsp;&nbsp;
-  <button onclick="grab()"> Grab </button> &nbsp;
-  <br>
-  <div id=msg>&nbsp;</div>
-  <br>
-  <input type="checkbox" onclick="drawWorld()" name="Annotate" checked />
-  <label for="Annotate">Annotate</label>
-  <hr>
-<b>Credits</b>:<br>
-Canvas Robot Game<br>
-by <i>B. von Konsky</i>
-<small>
-Animate a jointed multiple segment robot  using HTML 5 Canvas and JavaScript.</small><br>
-<a href="https://jsfiddle.net/548b21ed/">https://jsfiddle.net/548b21ed/</a>
-</p>
-</div>
-<div style="width:800px">
-<h2>Fun with Robots </h2>
-<ul>
-  <li> If <strong>Auto </strong>is checked, then robot will move automatically when angles changed. </li>
-  <li> If <strong>Annotate </strong>is checked, then show the joint angles on the diagram. </li>
-  <li> Press <strong> Move </strong> to set the joint configuration to (alpha, beta, gamma).</li>
-  <li> Press <strong> Grab </strong>to pick up the package first positioning the end of the robot arm over the yellow target.</li>
-  <li> Press <strong> Release </strong> to let go of the package.</li>
-  <li> Press <strong> Reset </strong> to return to the default configuration.<br>Reset is required after the robot or package collides with the floor, resulting in catastrophic failure.</li>
-</ul>
-</div>
-
-
-    <script type="text/javascript">//<![CDATA[
-	var tX = Math.round(Math.random() * 20) + 40;
-	var tY = Math.round(Math.random() * 20) + 25;
-	console.log(tX, tY);
-	function myalert(s) {
-		var e = document.getElementById("msg");
-		e.innerHTML=s;
-	}
-
-	function updateSlider(e) {
-		var val = e.value;
-		val = val < -180 ? -180: val;
-		val = val > 180 ? 180: val;
-		e.value = val;
-		var t = document.getElementById('s'+e.id);
-		t.value = val;
-		var automove = document.getElementsByName("Auto");
-		if (automove)
-			move();
-	}
-	function updateEdit(e) {
-		var val = e.value;
-		val = val < -180 ? -180: val;
-		val = val > 180 ? 180: val;
-		e.value = val;
-		var t = document.getElementById(e.id.substring(1));
-		t.value = val;
-		var automove = document.getElementsByName("Auto");
-		if (automove)
-			move();
-	}
-
-    var canvas = document.getElementById("game");
-    var context = canvas.getContext('2d');
-
-    // Set constants used in this JavaScript
-    var radius = 10; // radius of bezeled edge
-    var tic = 20; // size of ground tick
-    var speed = 1; // Angle incrment for new frame
-    var grabDistance = 3; // Max distance for successful grab
-    var benchThickness = 40; // Thinckness of the bench
-
-    // Set state variables used in this JavaScript
-    var kaboom = false;
-    var grabbed = true;
-	var parcel;
-    var robot = [{length: 100, angle: 45, target: 90, default: 90, name: "Alpha"}, 
-               {length: 75,  angle: 90, target:  0, default: 0, name: "Beta"}, 
-               {length: 50,  angle:-90, target:  0, default: 0, name: "Gamma"}];
-
-    // Reset the joint configuration to the default
-    function reset() {
-      grabbed = false;
-	  parcel = {x: -200, y: -radius,
-                grabX: tX, grabY: tY,
-                width: 80, height: 50,
-                targetY: -radius,v: 0};
-      for (var i = 0; i < robot.length; i++) {
-		//robot[i].angle = robot[i].default;
-        robot[i].target = robot[i].default;
-        document.getElementById(robot[i].name).value = robot[i].target;
-        document.getElementById('s'+robot[i].name).value = robot[i].target;
-      }
-      drawWorld();
-	  move();
-    }
-
-    function drawBoom(length) {
-
-      // Generate the for the boom perimeter
-      context.beginPath();
-      context.moveTo(0, radius);
-      context.arc(0, 0, radius, Math.PI / 2.0, 3.0 * Math.PI / 2.0, false);
-      context.arc(length, 0, radius, 3.0 * Math.PI / 2.0, Math.PI / 2.0, false);
-      context.lineTo(0, radius);
-
-      // Draw the perimeter of the boom
-      context.strokeStyle = 'black';
-      context.stroke();
-
-      // Cut the hole out of the boom
-      context.moveTo(length + radius * 0.8, 0);
-      context.arc(length, 0, radius * 0.8, 0.0, 2.0 * Math.PI, true);
-
-      // Close the boom path the the cut out hole
-      context.closePath();
-
-      // Draw the boom with the hole
-      context.fillStyle = 'lightgray';
-      context.fill();
-
-      // Draw the perimeter of the hole
-      context.beginPath();
-      context.arc(length, 0, radius * 0.8, 0, 2.0 * Math.PI, false);
-      context.closePath();
-      context.stroke();
-
-      // Draw the fixed bolt
-      drawBolt(0, radius);
-    }
-
-    function drawBolt(x, radius, base) {
-
-      // Draw a circle for the bolt outline
-      context.beginPath();
-      context.arc(0, 0, radius * 0.8, 0, 2 * Math.PI, true);
-      context.closePath();
-      context.stroke();
-
-      // Draw a line for the srrewdriver slot
-      var y = radius * 0.8 * Math.sin(Math.PI / 2.0);
-      context.beginPath();
-      context.moveTo(x, y);
-      context.lineTo(x, -y);
-
-      context.closePath();
-      context.stroke();
-    }
-
-    // Draw the robot and the package, 
-    // which might be connected to the end of the robot arm
-    function drawRobot() {
-
-      // Get the position of joints in world coordinates
-      var joint = getJointPositions();
-
-      // Remember the initial state
-      context.save();
-
-      // Set world origin to robot base and invert vertical coordinate system
-      context.translate(canvas.width / 2, canvas.height - benchThickness - radius);
-      context.scale(1.0, -1.0);
-
-      // Remember the world state
-      context.save();
-
-      // Draw the parcel, which might be in the claw if grabbed by the robot
-      var numSegments = robot.length;
-      var claw = {
-        x: joint[numSegments - 1].x,
-        y: joint[numSegments - 1].y
-      };
-      drawParcel(claw);
-
-      // Draw the base of the robot
-      drawBase();
-
-      // Rotate the initial segment which is fixed at the origin
-      var cumulativeAngle = robot[0].angle;
-
-      // Draw the initial robot segment
-      context.rotate(robot[0].angle * Math.PI / 180.0);
-      drawBoom(robot[0].length);
-
-      // Overlay annotation on top of the initial segmetn
-      drawAngle(robot[0].angle, cumulativeAngle, robot[0].name);
-
-      // Translate segments to the end of the previous one and rotate into position
-      for (var i = 1; i < robot.length; i++) {
-        context.translate(robot[i - 1].length, 0);
-        context.rotate(robot[i].angle * Math.PI / 180.0);
-        drawBoom(robot[i].length);
-
-        cumulativeAngle += robot[i].angle;
-        drawAngle(robot[i].angle, cumulativeAngle, robot[i].name);
-
-      }
-
-      // Restore world transformation
-      context.restore();
-
-      checkGroundCollision(joint);
-
-      // Restore the original state
-      context.restore();
-
-      if (kaboom) {
-        drawKaboom();
-      }
-    }
-
-    // Draw the base of the robot, which is a half circle.
-    function drawBase() {
-
-      // Remember the current graphics state
-      context.save();
-
-      // Shift the origin to the table top
-      context.translate(0, -radius);
-
-      // Draw a half circle for the base
-      context.beginPath();
-      context.arc(0, 0, radius * 2.5, 0, Math.PI, false);
-      context.lineTo(radius * 2.5, 0);
-      context.closePath;
-
-      // Base is gray and outlined
-      context.fillStyle = "lightgray";
-      context.fill();
-      context.strokeStyle = "black";
-      context.stroke();
-
-      // Restore state to what it was when the function began
-      context.restore();
-    }
-
-    function drawAngle(angle, cumulativeAngle, name) {
-      var annotateResult = document.getElementsByName("Annotate");
-      if (annotateResult[0].checked) {
-        var size = 3 * radius;
-        context.beginPath();
-        context.moveTo(0, 0);
-        context.lineTo(size, 0);
-
-        context.strokeStyle = "red";
-        context.stroke();
-
-        var previousFrameX = size * Math.cos(-angle * Math.PI / 180.0);
-        var previousFrameY = size * Math.sin(-angle * Math.PI / 180.0);
-        context.beginPath();
-        context.moveTo(0, 0);
-        context.lineTo(previousFrameX, previousFrameY);
-        context.strokeStyle = "gray";
-        context.stroke();
-
-        var clockwise = false;
-        if (angle > 0) {
-          clockwise = true;
-        }
-        context.beginPath();
-        context.arc(length, 0, radius * 3, 0, -angle * Math.PI / 180.0, clockwise);
-        context.stroke();
-
-        context.save();
-        context.translate(previousFrameX, previousFrameY);
-        context.rotate(-cumulativeAngle * Math.PI / 180);
-        context.scale(1, -1);
-        context.translate(-previousFrameX, -previousFrameY);
-
-        var annotation = name + "=" + angle;
-        context.font = "14px Comic Sans MS";
-        context.fillStyle = "blue";
-        context.textAlign = "left";
-        context.fillText(annotation, previousFrameX, previousFrameY);
-        var measurement = context.measureText(annotation)
-
-        context.beginPath();
-        context.arc(previousFrameX + measurement.width + 3, previousFrameY - 8, 2, 0, 2.0 * Math.PI, false);
-        context.stroke();
-
-        context.restore();
-      }
-    }
-
-    // Clear the canvas and draw the ground
-    function drawBackground() {
-      context.clearRect(0, 0, canvas.width, canvas.height);
-
-      // Draw a rectangle with perimeter for ground
-      var benchTop = canvas.height - benchThickness; // Top of bench
-      context.beginPath();
-      context.rect(0, benchTop, canvas.width, benchThickness);
-      context.closePath();
-      context.fillStyle = "tan";
-      context.fill();
-      context.lineWidth = 1;
-      context.strokeStyle = 'black';
-      context.stroke();
-
-      // Draw crosshatch for ground
-      for (var x = 0; x <= canvas.width; x += tic) {
-        context.beginPath();
-        context.moveTo(x, benchTop);
-        context.lineTo(x - tic, benchTop + tic);
-        context.closePath();
-        context.stroke();
-      }
-    }
-
-    // Draw a marker at (x,y) in the given sytle
-    function drawMarker(x, y, style) {
-      context.beginPath();
-      context.arc(x, y, 5, 0, 2.0 * Math.PI, false);
-      context.closePath();
-      context.fillStyle = style;
-      context.fill();
-    }
-
-    // Draw the package with the coloured grab icon in the center
-    function drawParcel(claw) {
-      var targetStyle = "rgba(0, 255, 0, 0.8)";
-      if (grabbed) {
-        parcel.x = claw.x + parcel.grabX - tX;
-        parcel.y = claw.y + parcel.grabY - tY;
-      } else {
-        targetStyle = "rgba(255, 255, 0, 0.8)";
-      }
-
-      // Draw the cardboard box
-      context.beginPath();
-      context.rect(parcel.x, parcel.y, parcel.width, parcel.height);
-      context.fillStyle = "tan";
-      context.strokeStyle = "black";
-      context.fill();
-      context.stroke();
-
-      // Draw the label on package
-      context.beginPath();
-      context.rect(parcel.x + 40, parcel.y + 4, 35, 22);
-      context.fillStyle = "lightgray";
-      context.strokeStyle = "gray";
-      context.fill();
-      context.stroke();
-      context.beginPath();
-      context.fillStyle = "darkgray";
-      context.rect(parcel.x + 42, parcel.y + 20, 28, 3);
-      context.rect(parcel.x + 42, parcel.y + 15, 15, 3);
-      context.rect(parcel.x + 42, parcel.y + 10, 10, 3);
-      context.fill();
-
-      // Draw string wrapped around the package
-      context.beginPath();
-      context.rect(parcel.x, parcel.y + 30, 80, 1);
-      context.rect(parcel.x + 30, parcel.y, 1, 50);
-      context.fillStyle = "black";
-      context.fill();
-
-      // Draw the Up arrow
-      context.beginPath();
-      context.moveTo(parcel.x + 9, parcel.y + 5);
-      context.lineTo(parcel.x + 9, parcel.y + 15);
-      context.lineTo(parcel.x + 5, parcel.y + 15);
-      context.lineTo(parcel.x + 12, parcel.y + 25);
-      context.lineTo(parcel.x + 19, parcel.y + 15);
-      context.lineTo(parcel.x + 15, parcel.y + 15);
-      context.lineTo(parcel.x + 15, parcel.y + 5);
-      context.lineTo(parcel.x + 10, parcel.y + 5);
-      context.fillStyle = "maroon";
-      context.strokeStyle = "gray";
-      context.fill();
-      context.stroke();
-
-      // Draw the stamps
-      context.beginPath();
-      context.rect(parcel.x + 64, parcel.y + 34, 10, 14);
-      context.fillStyle = "lightgray";
-      context.fill();
-      context.beginPath();
-      context.arc(parcel.x + 69, parcel.y + 41, 4, 0, 2.0 * Math.PI, true);
-      context.fillStyle = "darkgray";
-      context.fill();
-
-      // Draw Air Mail sticker, slightly rotated
-      var stickerX = parcel.x + 40;
-      var stickerY = parcel.y + 35;
-      context.save();
-      context.translate(stickerX, stickerY);
-      context.rotate(6 * Math.PI / 180.0);
-      context.translate(-stickerX, -stickerY);
-      context.beginPath();
-      context.rect(stickerX, stickerY, 15, 8);
-      context.fillStyle = "darckgray";
-      context.fill();
-      context.strokeStyle = "lightgray";
-      context.stroke();
-      context.restore();
-
-      // Draw a target on the parcel
-      //drawMarker(parcel.x + parcel.width / 2, parcel.y + parcel.height / 2, targetStyle);
-      drawMarker(parcel.x + tX, parcel.y + tY, targetStyle);
-    }
-
-    // Inform the user of catastrophic failure!
-    function drawKaboom() {
-      context.font = "30px Comic Sans MS";
-      context.fillStyle = "red";
-      context.textAlign = "center";
-      context.fillText("Kaboom!", canvas.width / 2, canvas.height / 2);
-      for (var i = 0; i < robot.length; i++) {
-        document.getElementById(robot[i].name).value = robot[i].angle;
-        document.getElementById('s'+robot[i].name).value = robot[i].angle;
-      }
-    }
-
-    // Draw everything
-    function drawWorld() {
-      drawBackground();
-      drawRobot();
-    }
-
-    // Detect collisions with the ground
-    function checkGroundCollision(point) {
-      for (var i = 0; i < point.length; i++) {
-        if (point[i].y < 0) {
-          drawMarker(point[i].x, point[i].y, "red");
-          kaboom = true;
-        }
-      }
-      if (grabbed) {
-        if (parcel.y < parcel.targetY) {
-          drawMarker(parcel.x, parcel.y, "red");
-          kaboom = true
-        }
-      }
-    }
-
-    // Calcuate the position of each joint in world coordinates
-    function getJointPositions() {
-      var angle = 0;
-      var x = 0;
-      var y = 0;
-      var joint = [];
-      for (var i = 0; i < robot.length; i++) {
-        angle += robot[i].angle;
-        x += robot[i].length * Math.cos(angle * Math.PI / 180.0);
-        y += robot[i].length * Math.sin(angle * Math.PI / 180.0);
-        joint[i] = {x: x, y: y};
-      }
-      return (joint);
-    }
-
-    // Step to the next joint angle for the given target
-    function stepAngle(angle, target) {
-      var theStep = 0; //Assume not step until proven otherwise
-
-      if (Math.abs(target - angle) != 0) {
-        if (target - angle > 0) {
-          theStep = speed; // step forward
-        } else {
-          theStep = -speed; // step backwards
-        }
-      }
-      return angle + theStep;
-    }
-
-    // Get the next parcel position
-    function stepParcelAcceleration() {
-      // Calcuate new altitude and velocity
-      if (parcel.y != parcel.targetY) {
-        parcel.v += 2;
-        parcel.y = parcel.y - parcel.v;
-      }
-      // Stop when the parcel reaches the ground
-      if (parcel.y < parcel.targetY) {
-        parcel.y = parcel.targetY;
-        parcel.v = 0;
-		myalert('released');
-      }
-    }
-
-	function move() 
-	{
-		myalert('');
-		kaboom = false;
-		animateRobot();
-	}
-    // Animate the robot until it is in its target joint configuration
-    function animateRobot() {	  
-      // Calculate new joint angles based on targets
-      for (var i = 0; i < robot.length; i++) {
-        var angleName = robot[i].name;
-        robot[i].target = Math.round(document.getElementById(angleName).value);
-        robot[i].angle = stepAngle(robot[i].angle, robot[i].target);
-      }
-
-      if (!grabbed) {
-        stepParcelAcceleration();
-      }
-
-      // Redraw everything
-      drawWorld();
-
-      // If there is no error, continue animating if not done
-      if (!kaboom) {
-        var doneAnimating = true;
-        if (!grabbed) {
-          if (parcel.y != parcel.targetY) {
-            doneAnimating = false;
-          }
-        }
-        for (var i = 0; i < robot.length; i++) {
-          if (robot[i].angle != robot[i].target) {
-            doneAnimating = false;
-          }
-        }
-        if (!doneAnimating) {
-          window.setTimeout(animateRobot, 30);
-        }
-      }
-    }
-
-    // The the position of the end-effector used for grabbing
-    function getClaw() {
-      var joint = getJointPositions();
-      var numSegments = joint.length;
-      return ({
-        x: joint[numSegments - 1].x,
-        y: joint[numSegments - 1].y
-      });
-    }
-
-    // Grab the package if it is aligned with the claw
-    function grab() {
-      if (grabbed) {
-        myalert("already grabbed");
-      } else {
-        var claw = getClaw();
-        var grab = {
-          x: parcel.x + tX,
-          y: parcel.y + tY
-        };
-        var d = Math.sqrt(Math.pow(claw.x - grab.x, 2.0) + Math.pow(claw.y - grab.y, 2.0));
-        if (d < grabDistance) {
-          parcel.grabX = grab.x - claw.x;
-          parcel.grabY = grab.y - claw.y;
-          grabbed = true;
-          drawWorld();
-          myalert('grabbed');
-        } else {
-          var msg = "";
-          msg += "Parcel too far (" + d + ")\n";
-          //msg += "Claw is at ("   + claw.x   + ", " + claw.y   + ")\n";
-          //msg += "Parcel is at (" + grab.x + ", " + grab.y + ")\n";
-          myalert(msg);
-        }
-      }
-    }
-
-    // Release the package and animate a fall, if applicable
-    function release() {
-	  myalert(grabbed?'releasing':'');
-      grabbed = false;
-      animateRobot();
-    }
-
-    // Draw the world in its initial state
-   // reset();
-   // drawWorld();
-   reset();
-   animateRobot();
-
-
-
-  //]]></script>
+	<!-- based on Canvas Robot Game by -->
+	<!-- B. von Konsky                 -->
+	<!-- Business Web Technologies     -->
+	<!-- School of Information Systems -->
+	<!-- Curtin University             -->
+	<div class="credits">
+		<p>
+			<b>Credits</b>:
+			<br>Canvas Robot Game
+			<br>by <i>B. von Konsky</i>
+			<br><small>
+			Animate a jointed multiple segment robot  using HTML 5 Canvas and JavaScript.</small>
+			<br>
+			<a href="https://jsfiddle.net/548b21ed/">https://jsfiddle.net/548b21ed/</a>
+		</p>
+	</div>
+	<div style="display:inline-block">
+		<canvas id="game" width="640px" height="410px"></canvas>
+	</div>
+	<div class="panel">
+		<div class="ïnline"></div>
+		<div class="ïnline">
+			<p style="padding-left:220px;margin-top:56px">
+				<label for="gamma">Gamma</label>
+				<br>
+				<input id="Gamma" value="0" style="width:50px" onchange="updateSlider(this)" />
+				<input type="range" min="-180" max="180" value="0" class="slider" id="sGamma" style="width:80px" onchange="updateEdit(this)">
+				<br>
+				<label for="beta">Beta</label>
+				<br>
+				<input id="Beta" value="0" style="width:50px" onchange="updateSlider(this)" />
+				<input type="range" min="-180" max="180" value="0" class="slider" id="sBeta" style="width:80px" onchange="updateEdit(this)">
+				<br>
+				<label for="alpha">Alpha</label>
+				<br>
+				<input id="Alpha" value="90" style="width:50px" onchange="updateSlider(this)" />
+				<input type="range" min="-180" max="180" value="90" class="slider" id="sAlpha" style="width:80px" onchange="updateEdit(this)">
+			</p>
+			<p style="margin-top:-194px;position:relative">
+				<button onclick="location.reload()">Reload</button>&nbsp;&nbsp;&nbsp;
+				<button onclick="myalert('');reset()">Reset</button>&nbsp;&nbsp;&nbsp;
+				<button onclick="release()">Release</button>&nbsp;&nbsp;&nbsp;
+				<button onclick="grab()">Grab</button>&nbsp; &nbsp;&nbsp;&nbsp;
+				<button onclick="move()">Move</button>
+				<hr style="width:98%">
+				<input type="checkbox" onclick="drawWorld()" name="Annotate" checked />
+				<label for="Annotate">Annotate</label>&nbsp;&nbsp;&nbsp;&nbsp;
+				<input type="checkbox" onclick="drawWorld()" name="Auto" checked />
+				<label for="Auto">Auto</label>
+				<br>
+				<div id=msg style="margin-top:10px;height:80px;width:180px">asdad&nbsp;</div>
+			</p>
+		</div>
+	</div>
+	<div style="width:800px;margin-top:-20px;position:relative;">
+		<div class="inline"><i>&nbsp;presented by sefgit A.D. 2021</i></div>
+		<h2>Fun with Robots </h2>
+		<ul>
+			<li>If <strong>Auto </strong>is checked, then robot will move automatically when angles changed.</li>
+			<li>If <strong>Annotate </strong>is checked, then show the joint angles on the diagram.</li>
+			<li>Press <strong> Move </strong> to set the joint configuration to (alpha, beta, gamma).</li>
+			<li>Press <strong> Grab </strong>to pick up the package first positioning the end of the robot arm over the yellow target.</li>
+			<li>Press <strong> Release </strong> to let go of the package.</li>
+			<li>Press <strong> Reset </strong> to return to the default configuration.
+				<br>Reset is required after the robot or package collides with the floor, resulting in catastrophic failure.</li>
+		</ul>
+	</div>
+	<script type="text/javascript">
+		//<![CDATA[
+			var tX = Math.round(Math.random() * 20) + 40;
+			var tY = Math.round(Math.random() * 20) + 25;
+			
+			function myalert(s) 
+			{
+				var e = document.getElementById("msg");
+				e.innerHTML=s;
+			}
+		
+			function updateSlider(e) 
+			{
+				var val = e.value;
+				val = val < -180 ? -180: val;
+				val = val > 180 ? 180: val;
+				e.value = val;
+				var t = document.getElementById('s'+e.id);
+				t.value = val;
+				var automove = document.getElementsByName("Auto");
+				if (automove)
+					move();
+			}
+			
+			function updateEdit(e) {
+				var val = e.value;
+				val = val < -180 ? -180: val;
+				val = val > 180 ? 180: val;
+				e.value = val;
+				var t = document.getElementById(e.id.substring(1));
+				t.value = val;
+				var automove = document.getElementsByName("Auto");
+				if (automove)
+					move();
+			}
+		
+		    var canvas = document.getElementById("game");
+		    var context = canvas.getContext('2d');
+		
+		    // Set constants used in this JavaScript
+		    var radius = 10; // radius of bezeled edge
+		    var tic = 20; // size of ground tick
+		    var speed = 1; // Angle incrment for new frame
+		    var grabDistance = 3; // Max distance for successful grab
+		    var benchThickness = 40; // Thinckness of the bench
+		
+		    // Set state variables used in this JavaScript
+		    var kaboom = false;
+		    var grabbed = true;
+		    var robot = [{length: 100, angle: 45, target: 90, default: 90, name: "Alpha"}, 
+		               {length: 75,  angle: 90, target:  0, default: 0, name: "Beta"}, 
+		               {length: 50,  angle:-90, target:  0, default: 0, name: "Gamma"}];
+			var parcel;
+		
+		    // Reset the joint configuration to the default
+		    function reset() 
+			{
+		      grabbed = false;
+			  parcel = {x: -200, y: -radius,
+		                grabX: tX, grabY: tY,
+		                width: 80, height: 50,
+		                targetY: -radius,v: 0};
+		      for (var i = 0; i < robot.length; i++) 
+			  {
+		        robot[i].target = robot[i].default;
+		        document.getElementById(robot[i].name).value = robot[i].target;
+		        document.getElementById('s'+robot[i].name).value = robot[i].target;
+		      }
+		      drawWorld();
+			  move();
+		    }
+		
+		    function drawBoom(length) 
+			{		
+		      // Generate the for the boom perimeter
+		      context.beginPath();
+		      context.moveTo(0, radius);
+		      context.arc(0, 0, radius, Math.PI / 2.0, 3.0 * Math.PI / 2.0, false);
+		      context.arc(length, 0, radius, 3.0 * Math.PI / 2.0, Math.PI / 2.0, false);
+		      context.lineTo(0, radius);
+		
+		      // Draw the perimeter of the boom
+		      context.strokeStyle = 'black';
+		      context.stroke();
+		
+		      // Cut the hole out of the boom
+		      context.moveTo(length + radius * 0.8, 0);
+		      context.arc(length, 0, radius * 0.8, 0.0, 2.0 * Math.PI, true);
+		
+		      // Close the boom path the the cut out hole
+		      context.closePath();
+		
+		      // Draw the boom with the hole
+		      context.fillStyle = 'lightgray';
+		      context.fill();
+		
+		      // Draw the perimeter of the hole
+		      context.beginPath();
+		      context.arc(length, 0, radius * 0.8, 0, 2.0 * Math.PI, false);
+		      context.closePath();
+		      context.stroke();
+		
+		      // Draw the fixed bolt
+		      drawBolt(0, radius);
+		    }
+		
+		    function drawBolt(x, radius, base) 
+			{		
+		      // Draw a circle for the bolt outline
+		      context.beginPath();
+		      context.arc(0, 0, radius * 0.8, 0, 2 * Math.PI, true);
+		      context.closePath();
+		      context.stroke();
+		
+		      // Draw a line for the srrewdriver slot
+		      var y = radius * 0.8 * Math.sin(Math.PI / 2.0);
+		      context.beginPath();
+		      context.moveTo(x, y);
+		      context.lineTo(x, -y);
+		
+		      context.closePath();
+		      context.stroke();
+		    }
+		
+		    // Draw the robot and the package, 
+		    // which might be connected to the end of the robot arm
+		    function drawRobot() 
+			{
+		
+		      // Get the position of joints in world coordinates
+		      var joint = getJointPositions();
+		
+		      // Remember the initial state
+		      context.save();
+		
+		      // Set world origin to robot base and invert vertical coordinate system
+		      context.translate(canvas.width / 2, canvas.height - benchThickness - radius);
+		      context.scale(1.0, -1.0);
+		
+		      // Remember the world state
+		      context.save();
+		
+		      // Draw the parcel, which might be in the claw if grabbed by the robot
+		      var numSegments = robot.length;
+		      var claw = {
+		        x: joint[numSegments - 1].x,
+		        y: joint[numSegments - 1].y
+		      };
+		      drawParcel(claw);
+		
+		      // Draw the base of the robot
+		      drawBase();
+		
+		      // Rotate the initial segment which is fixed at the origin
+		      var cumulativeAngle = robot[0].angle;
+		
+		      // Draw the initial robot segment
+		      context.rotate(robot[0].angle * Math.PI / 180.0);
+		      drawBoom(robot[0].length);
+		
+		      // Overlay annotation on top of the initial segmetn
+		      drawAngle(robot[0].angle, cumulativeAngle, robot[0].name);
+		
+		      // Translate segments to the end of the previous one and rotate into position
+		      for (var i = 1; i < robot.length; i++) 
+			  {
+		        context.translate(robot[i - 1].length, 0);
+		        context.rotate(robot[i].angle * Math.PI / 180.0);
+		        drawBoom(robot[i].length);
+		
+		        cumulativeAngle += robot[i].angle;
+		        drawAngle(robot[i].angle, cumulativeAngle, robot[i].name);
+		
+		      }
+		
+		      // Restore world transformation
+		      context.restore();
+		
+		      checkGroundCollision(joint);
+		
+		      // Restore the original state
+		      context.restore();
+		
+		      if (kaboom) {
+		        drawKaboom();
+		      }
+		    }
+		
+		    // Draw the base of the robot, which is a half circle.
+		    function drawBase() 
+			{		
+		      // Remember the current graphics state
+		      context.save();
+		
+		      // Shift the origin to the table top
+		      context.translate(0, -radius);
+		
+		      // Draw a half circle for the base
+		      context.beginPath();
+		      context.arc(0, 0, radius * 2.5, 0, Math.PI, false);
+		      context.lineTo(radius * 2.5, 0);
+		      context.closePath;
+		
+		      // Base is gray and outlined
+		      context.fillStyle = "lightgray";
+		      context.fill();
+		      context.strokeStyle = "black";
+		      context.stroke();
+		
+		      // Restore state to what it was when the function began
+		      context.restore();
+		    }
+		
+		    function drawAngle(angle, cumulativeAngle, name) 
+			{
+		      var annotateResult = document.getElementsByName("Annotate");
+		      if (annotateResult[0].checked) {
+		        var size = 3 * radius;
+		        context.beginPath();
+		        context.moveTo(0, 0);
+		        context.lineTo(size, 0);
+		
+		        context.strokeStyle = "red";
+		        context.stroke();
+		
+		        var previousFrameX = size * Math.cos(-angle * Math.PI / 180.0);
+		        var previousFrameY = size * Math.sin(-angle * Math.PI / 180.0);
+		        context.beginPath();
+		        context.moveTo(0, 0);
+		        context.lineTo(previousFrameX, previousFrameY);
+		        context.strokeStyle = "gray";
+		        context.stroke();
+		
+		        var clockwise = false;
+		        if (angle > 0) {
+		          clockwise = true;
+		        }
+		        context.beginPath();
+		        context.arc(length, 0, radius * 3, 0, -angle * Math.PI / 180.0, clockwise);
+		        context.stroke();
+		
+		        context.save();
+		        context.translate(previousFrameX, previousFrameY);
+		        context.rotate(-cumulativeAngle * Math.PI / 180);
+		        context.scale(1, -1);
+		        context.translate(-previousFrameX, -previousFrameY);
+		
+		        var annotation = name + "=" + angle;
+		        context.font = "14px Comic Sans MS";
+		        context.fillStyle = "blue";
+		        context.textAlign = "left";
+		        context.fillText(annotation, previousFrameX, previousFrameY);
+		        var measurement = context.measureText(annotation)
+		
+		        context.beginPath();
+		        context.arc(previousFrameX + measurement.width + 3, previousFrameY - 8, 2, 0, 2.0 * Math.PI, false);
+		        context.stroke();
+		
+		        context.restore();
+		      }
+		    }
+		
+		    // Clear the canvas and draw the ground
+		    function drawBackground() 
+			{
+		      context.clearRect(0, 0, canvas.width, canvas.height);
+		
+		      // Draw a rectangle with perimeter for ground
+		      var benchTop = canvas.height - benchThickness; // Top of bench
+		      context.beginPath();
+		      context.rect(0, benchTop, canvas.width, benchThickness);
+		      context.closePath();
+		      context.fillStyle = "tan";
+		      context.fill();
+		      context.lineWidth = 1;
+		      context.strokeStyle = 'black';
+		      context.stroke();
+		
+		      // Draw crosshatch for ground
+		      for (var x = 0; x <= canvas.width; x += tic) 
+			  {
+		        context.beginPath();
+		        context.moveTo(x, benchTop);
+		        context.lineTo(x - tic, benchTop + tic);
+		        context.closePath();
+		        context.stroke();
+		      }
+		    }
+		
+		    // Draw a marker at (x,y) in the given sytle
+		    function drawMarker(x, y, style) 
+			{
+		      context.beginPath();
+		      context.arc(x, y, 5, 0, 2.0 * Math.PI, false);
+		      context.closePath();
+		      context.fillStyle = style;
+		      context.fill();
+		    }
+		
+		    // Draw the package with the coloured grab icon in the center
+		    function drawParcel(claw) 
+			{
+		      var targetStyle = "rgba(0, 255, 0, 0.8)";
+		      if (grabbed) {
+		        parcel.x = claw.x + parcel.grabX - tX;
+		        parcel.y = claw.y + parcel.grabY - tY;
+		      } else {
+		        targetStyle = "rgba(255, 255, 0, 0.8)";
+		      }
+		
+		      // Draw the cardboard box
+		      context.beginPath();
+		      context.rect(parcel.x, parcel.y, parcel.width, parcel.height);
+		      context.fillStyle = "tan";
+		      context.strokeStyle = "black";
+		      context.fill();
+		      context.stroke();
+		
+		      // Draw the label on package
+		      context.beginPath();
+		      context.rect(parcel.x + 40, parcel.y + 4, 35, 22);
+		      context.fillStyle = "lightgray";
+		      context.strokeStyle = "gray";
+		      context.fill();
+		      context.stroke();
+		      context.beginPath();
+		      context.fillStyle = "darkgray";
+		      context.rect(parcel.x + 42, parcel.y + 20, 28, 3);
+		      context.rect(parcel.x + 42, parcel.y + 15, 15, 3);
+		      context.rect(parcel.x + 42, parcel.y + 10, 10, 3);
+		      context.fill();
+		
+		      // Draw string wrapped around the package
+		      context.beginPath();
+		      context.rect(parcel.x, parcel.y + 30, 80, 1);
+		      context.rect(parcel.x + 30, parcel.y, 1, 50);
+		      context.fillStyle = "black";
+		      context.fill();
+		
+		      // Draw the Up arrow
+		      context.beginPath();
+		      context.moveTo(parcel.x + 9, parcel.y + 5);
+		      context.lineTo(parcel.x + 9, parcel.y + 15);
+		      context.lineTo(parcel.x + 5, parcel.y + 15);
+		      context.lineTo(parcel.x + 12, parcel.y + 25);
+		      context.lineTo(parcel.x + 19, parcel.y + 15);
+		      context.lineTo(parcel.x + 15, parcel.y + 15);
+		      context.lineTo(parcel.x + 15, parcel.y + 5);
+		      context.lineTo(parcel.x + 10, parcel.y + 5);
+		      context.fillStyle = "maroon";
+		      context.strokeStyle = "gray";
+		      context.fill();
+		      context.stroke();
+		
+		      // Draw the stamps
+		      context.beginPath();
+		      context.rect(parcel.x + 64, parcel.y + 34, 10, 14);
+		      context.fillStyle = "lightgray";
+		      context.fill();
+		      context.beginPath();
+		      context.arc(parcel.x + 69, parcel.y + 41, 4, 0, 2.0 * Math.PI, true);
+		      context.fillStyle = "darkgray";
+		      context.fill();
+		
+		      // Draw Air Mail sticker, slightly rotated
+		      var stickerX = parcel.x + 40;
+		      var stickerY = parcel.y + 35;
+		      context.save();
+		      context.translate(stickerX, stickerY);
+		      context.rotate(6 * Math.PI / 180.0);
+		      context.translate(-stickerX, -stickerY);
+		      context.beginPath();
+		      context.rect(stickerX, stickerY, 15, 8);
+		      context.fillStyle = "darckgray";
+		      context.fill();
+		      context.strokeStyle = "lightgray";
+		      context.stroke();
+		      context.restore();
+		
+		      // Draw a target on the parcel
+		      //drawMarker(parcel.x + parcel.width / 2, parcel.y + parcel.height / 2, targetStyle);
+		      drawMarker(parcel.x + tX, parcel.y + tY, targetStyle);
+		    }
+		
+		    // Inform the user of catastrophic failure!
+		    function drawKaboom() 
+			{
+		      context.font = "30px Comic Sans MS";
+		      context.fillStyle = "red";
+		      context.textAlign = "center";
+		      context.fillText("Kaboom!", canvas.width / 2, canvas.height / 2);
+		      for (var i = 0; i < robot.length; i++) 
+			  {
+		        document.getElementById(robot[i].name).value = robot[i].angle;
+		        document.getElementById('s'+robot[i].name).value = robot[i].angle;
+		      }
+		    }
+		
+		    // Draw everything
+		    function drawWorld() 
+			{
+		      drawBackground();
+		      drawRobot();
+		    }
+		
+		    // Detect collisions with the ground
+		    function checkGroundCollision(point) 
+			{
+		      for (var i = 0; i < point.length; i++) 
+			  {
+		        if (point[i].y < 0) {
+		          drawMarker(point[i].x, point[i].y, "red");
+		          kaboom = true;
+		        }
+		      }
+		      if (grabbed) {
+		        if (parcel.y < parcel.targetY) {
+		          drawMarker(parcel.x, parcel.y, "red");
+		          kaboom = true
+		        }
+		      }
+		    }
+		
+		    // Calcuate the position of each joint in world coordinates
+		    function getJointPositions() 
+			{
+		      var angle = 0;
+		      var x = 0;
+		      var y = 0;
+		      var joint = [];
+		      for (var i = 0; i < robot.length; i++) 
+			  {
+		        angle += robot[i].angle;
+		        x += robot[i].length * Math.cos(angle * Math.PI / 180.0);
+		        y += robot[i].length * Math.sin(angle * Math.PI / 180.0);
+		        joint[i] = {x: x, y: y};
+		      }
+		      return (joint);
+		    }
+		
+		    // Step to the next joint angle for the given target
+		    function stepAngle(angle, target) 
+			{
+		      var theStep = 0; //Assume not step until proven otherwise
+		
+		      if (Math.abs(target - angle) != 0) {
+		        if (target - angle > 0) {
+		          theStep = speed; // step forward
+		        } else {
+		          theStep = -speed; // step backwards
+		        }
+		      }
+		      return angle + theStep;
+		    }
+		
+		    // Get the next parcel position
+		    function stepParcelAcceleration() 
+			{
+		      // Calcuate new altitude and velocity
+		      if (parcel.y != parcel.targetY) {
+		        parcel.v += 2;
+		        parcel.y = parcel.y - parcel.v;
+		      }
+		      // Stop when the parcel reaches the ground
+		      if (parcel.y < parcel.targetY) {
+		        parcel.y = parcel.targetY;
+		        parcel.v = 0;
+				myalert('released');
+		      }
+		    }
+		
+		    // Animate the robot until it is in its target joint configuration
+		    function animateRobot() 
+			{	  
+		      // Calculate new joint angles based on targets
+		      for (var i = 0; i < robot.length; i++) 
+			  {
+		        var angleName = robot[i].name;
+		        robot[i].target = Math.round(document.getElementById(angleName).value);
+		        robot[i].angle = stepAngle(robot[i].angle, robot[i].target);
+		      }
+		
+		      if (!grabbed) {
+		        stepParcelAcceleration();
+		      }
+		
+		      // Redraw everything
+		      drawWorld();
+		
+		      // If there is no error, continue animating if not done
+		      if (!kaboom) {
+		        var doneAnimating = true;
+		        if (!grabbed) {
+		          if (parcel.y != parcel.targetY) {
+		            doneAnimating = false;
+		          }
+		        }
+		        for (var i = 0; i < robot.length; i++) 
+				{
+		          if (robot[i].angle != robot[i].target) {
+		            doneAnimating = false;
+		          }
+		        }
+		        if (!doneAnimating) {
+		          window.setTimeout(animateRobot, 30);
+		        }
+		      }
+		    }
+		
+			function move() 
+			{
+				myalert('');
+				kaboom = false;
+				animateRobot();
+			}
+			
+		    // The the position of the end-effector used for grabbing
+		    function getClaw() 
+			{
+		      var joint = getJointPositions();
+		      var numSegments = joint.length;
+		      return ({
+		        x: joint[numSegments - 1].x,
+		        y: joint[numSegments - 1].y
+		      });
+		    }
+		
+		    // Grab the package if it is aligned with the claw
+		    function grab() 
+			{
+		      if (grabbed) {
+		        myalert("already grabbed");
+		      } else {
+		        var claw = getClaw();
+		        var grab = {
+		          x: parcel.x + tX,
+		          y: parcel.y + tY
+		        };
+		        var d = Math.sqrt(Math.pow(claw.x - grab.x, 2.0) + Math.pow(claw.y - grab.y, 2.0));
+		        if (d < grabDistance) {
+		          parcel.grabX = grab.x - claw.x;
+		          parcel.grabY = grab.y - claw.y;
+		          grabbed = true;
+		          drawWorld();
+		          myalert('grabbed');
+		        } else {
+		          var msg = "";
+		          msg += "Parcel too far (" + d + ")\n";
+		          //msg += "Claw is at ("   + claw.x   + ", " + claw.y   + ")\n";
+		          //msg += "Parcel is at (" + grab.x + ", " + grab.y + ")\n";
+		          myalert(msg);
+		        }
+		      }
+		    }
+		
+		    // Release the package and animate a fall, if applicable
+		    function release() 
+			{
+			  myalert(grabbed?'releasing':'');
+		      grabbed = false;
+		      animateRobot();
+		    }
+		
+		   // Draw the world in its initial state
+		   reset();
+		   animateRobot();
+		  //]]>
+	</script>
 </body>
 </html>
