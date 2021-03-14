@@ -53,10 +53,29 @@
 	}
 	.credits {
 		position:absolute;
-		display:inline-block; 
 		width:200px; 
 		vertical-align:top;
 		left:20px;
+	}
+	.buttons {
+		position:absolute;
+		width:340px; 
+		vertical-align:top;
+		left:280px;
+	}
+	.sliders {
+		position:absolute;
+		width:340px; 
+		vertical-align:top;
+		left:470px;
+		top:55px;
+	}
+	.infos {
+		position:absolute;
+		width:640px; 
+		vertical-align:top;
+		left:10px;
+		top:400px;
 	}
 	</style>
 </head>
@@ -77,45 +96,44 @@
 			<a href="https://jsfiddle.net/548b21ed/">https://jsfiddle.net/548b21ed/</a>
 		</p>
 	</div>
+	<div class="buttons">
+		<p>
+			<button onclick="location.reload()">Reload</button>&nbsp;&nbsp;&nbsp;
+			<button onclick="myalert('');reset()">Reset</button>&nbsp;&nbsp;&nbsp;
+			<button onclick="release()">Release</button>&nbsp;&nbsp;&nbsp;
+			<button onclick="grab()">Grab</button>&nbsp; &nbsp;&nbsp;&nbsp;
+			<button onclick="move()">Move</button>
+			<hr style="width:98%">
+			<input type="checkbox" onclick="drawWorld()" name="Annotate" checked />
+			<label for="Annotate">Annotate</label>&nbsp;&nbsp;&nbsp;&nbsp;
+			<input type="checkbox" onclick="drawWorld()" name="Auto" checked />
+			<label for="Auto">Auto</label>
+			<br>
+			<div id=msg style="margin-top:10px;height:80px;width:180px">asdad&nbsp;</div>
+		</p>
+	</div>
+	<div class="sliders">
+		<p>
+			<label for="gamma">Gamma</label>
+			<br>
+			<input id="Gamma" value="0" style="width:50px" onchange="updateSlider(this)" />
+			<input type="range" min="-180" max="180" value="0" class="slider" id="sGamma" style="width:80px" onchange="updateEdit(this)">
+			<br>
+			<label for="beta">Beta</label>
+			<br>
+			<input id="Beta" value="0" style="width:50px" onchange="updateSlider(this)" />
+			<input type="range" min="-180" max="180" value="0" class="slider" id="sBeta" style="width:80px" onchange="updateEdit(this)">
+			<br>
+			<label for="alpha">Alpha</label>
+			<br>
+			<input id="Alpha" value="90" style="width:50px" onchange="updateSlider(this)" />
+			<input type="range" min="-180" max="180" value="90" class="slider" id="sAlpha" style="width:80px" onchange="updateEdit(this)">
+		</p>
+	</div>
 	<div style="display:inline-block">
 		<canvas id="game" width="640px" height="410px"></canvas>
 	</div>
-	<div class="panel">
-		<div class="ïnline"></div>
-		<div class="ïnline">
-			<p style="padding-left:220px;margin-top:56px">
-				<label for="gamma">Gamma</label>
-				<br>
-				<input id="Gamma" value="0" style="width:50px" onchange="updateSlider(this)" />
-				<input type="range" min="-180" max="180" value="0" class="slider" id="sGamma" style="width:80px" onchange="updateEdit(this)">
-				<br>
-				<label for="beta">Beta</label>
-				<br>
-				<input id="Beta" value="0" style="width:50px" onchange="updateSlider(this)" />
-				<input type="range" min="-180" max="180" value="0" class="slider" id="sBeta" style="width:80px" onchange="updateEdit(this)">
-				<br>
-				<label for="alpha">Alpha</label>
-				<br>
-				<input id="Alpha" value="90" style="width:50px" onchange="updateSlider(this)" />
-				<input type="range" min="-180" max="180" value="90" class="slider" id="sAlpha" style="width:80px" onchange="updateEdit(this)">
-			</p>
-			<p style="margin-top:-194px;position:relative">
-				<button onclick="location.reload()">Reload</button>&nbsp;&nbsp;&nbsp;
-				<button onclick="myalert('');reset()">Reset</button>&nbsp;&nbsp;&nbsp;
-				<button onclick="release()">Release</button>&nbsp;&nbsp;&nbsp;
-				<button onclick="grab()">Grab</button>&nbsp; &nbsp;&nbsp;&nbsp;
-				<button onclick="move()">Move</button>
-				<hr style="width:98%">
-				<input type="checkbox" onclick="drawWorld()" name="Annotate" checked />
-				<label for="Annotate">Annotate</label>&nbsp;&nbsp;&nbsp;&nbsp;
-				<input type="checkbox" onclick="drawWorld()" name="Auto" checked />
-				<label for="Auto">Auto</label>
-				<br>
-				<div id=msg style="margin-top:10px;height:80px;width:180px">asdad&nbsp;</div>
-			</p>
-		</div>
-	</div>
-	<div style="width:800px;margin-top:-20px;position:relative;">
+	<div class="infos">
 		<div class="inline"><i>&nbsp;presented by sefgit A.D. 2021</i></div>
 		<h2>Fun with Robots </h2>
 		<ul>
