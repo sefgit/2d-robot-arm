@@ -77,6 +77,9 @@
 		left:10px;
 		top:400px;
 	}
+	.reload { background-color: white; color:red; font-weight:bold; }
+	.grab { background-color: yellow; }
+	.release { background-color: lime; }
 	</style>
 </head>
 <body>
@@ -98,10 +101,10 @@
 	</div>
 	<div class="buttons">
 		<p>
-			<button onclick="location.reload()">Reload</button>&nbsp;&nbsp;&nbsp;
+			<button class="reload" onclick="location.reload()">Reload</button>&nbsp;&nbsp;&nbsp;
 			<button onclick="myalert('');reset()">Reset</button>&nbsp;&nbsp;&nbsp;
-			<button onclick="release()">Release</button>&nbsp;&nbsp;&nbsp;
-			<button onclick="grab()">Grab</button>&nbsp; &nbsp;&nbsp;&nbsp;
+			<button class="release" onclick="release()">Release</button>&nbsp;&nbsp;&nbsp;
+			<button class="grab" onclick="grab()">Grab</button>&nbsp; &nbsp;&nbsp;&nbsp;
 			<button onclick="move()">Move</button>
 			<hr style="width:98%">
 			<input type="checkbox" onclick="drawWorld()" name="Annotate" checked />
